@@ -2,23 +2,22 @@
 using MediatR;
 using Domain.Interfaces.Services;
 
-namespace Application.CQRS.Queries.Handlers
+namespace Application.CQRS.Queries.Handlers;
+
+public class GetAnimesByDiretorHandler : IRequestHandler<GetAnimesByDiretorQuery, IEnumerable<Anime?>>
 {
-    public class GetAnimesByDiretorHandler : IRequestHandler<GetAnimesByDiretorQuery, IEnumerable<Anime?>>
+    private readonly IAnimeService animeService;
+    public GetAnimesByDiretorHandler(IAnimeService animeService)
     {
-        private readonly IAnimeService animeService;
-        public GetAnimesByDiretorHandler(IAnimeService animeService)
+        this.animeService = animeService;
+    }
+    public async Task<IEnumerable<Anime?>> Handle(GetAnimesByDiretorQuery request, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(request.NameDirector))
         {
-            this.animeService = animeService;
+            throw new ArgumentException("Diretor must not be empty");
         }
-        public async Task<IEnumerable<Anime?>> Handle(GetAnimesByDiretorQuery request, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrEmpty(request.NameDirector))
-            {
-                throw new ArgumentException("Diretor must not be empty");
-            }
-            var animes = await animeService.GetByDirectorAsync(request.NameDirector);
-            return animes;
-        }
+        var animes = await animeService.GetByDirectorAsync(request.NameDirector);
+        return animes;
     }
 }

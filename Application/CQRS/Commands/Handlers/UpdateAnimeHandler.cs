@@ -4,31 +4,30 @@ using AutoMapper;
 using Domain.Interfaces.Services;
 using Domain.Exceptions;
 
-namespace Application.CQRS.Commands.Handlers
+namespace Application.CQRS.Commands.Handlers;
+
+public class UpdateAnimeHandler : IRequestHandler<UpdateAnimeCommand, bool>
 {
-    public class UpdateAnimeHandler : IRequestHandler<UpdateAnimeCommand, bool>
+    private readonly IMapper mapper;
+    private readonly IAnimeService animeService;
+
+    public UpdateAnimeHandler(IAnimeService animeService, IMapper mapper)
     {
-        private readonly IMapper mapper;
-        private readonly IAnimeService animeService;
+        this.animeService = animeService;
+        this.mapper = mapper;
+    }
 
-        public UpdateAnimeHandler(IAnimeService animeService, IMapper mapper)
+    public async Task<bool> Handle(UpdateAnimeCommand request, CancellationToken cancellationToken)
+    {
+        var animeForUpdate = await animeService.GetByIdAsync(request.Id);
+        if (animeForUpdate == null)
         {
-            this.animeService = animeService;
-            this.mapper = mapper;
+            throw new NotFoundException("Anime not found");
         }
-
-        public async Task<bool> Handle(UpdateAnimeCommand request, CancellationToken cancellationToken)
-        {
-            var animeForUpdate = await animeService.GetByIdAsync(request.Id);
-            if (animeForUpdate == null)
-            {
-                throw new NotFoundException("Anime not found");
-            }
-            animeForUpdate.Nome = request.Nome;
-            animeForUpdate.Diretor = request.Diretor;
-            animeForUpdate.Resumo = request.Resumo;
-            await animeService.UpdateAsync(animeForUpdate);
-            return true;
-        }
+        animeForUpdate.Nome = request.Nome;
+        animeForUpdate.Diretor = request.Diretor;
+        animeForUpdate.Resumo = request.Resumo;
+        await animeService.UpdateAsync(animeForUpdate);
+        return true;
     }
 }
